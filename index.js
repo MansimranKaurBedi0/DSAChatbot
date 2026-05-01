@@ -1,12 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import readlineSync from "readline-sync";
 dotenv.config();
 const ai = new GoogleGenAI({
   apiKey: process.env.GOOGLE_API_KEY,
 });
 
 async function main() {
-  const response = await ai.models.generateContent({
+  const chat = ai.chats.create({
     model: "gemini-3-flash-preview",
     contents: "arrays",
     config: {
@@ -35,8 +36,24 @@ Strict boundaries:
 Do not answer unrelated topics under any circumstances.
 Stay focused only on DSA education.`,
     },
+    history: [],
   });
-  console.log(response.text);
+
+  while (true) {
+    const userProblem = readlineSync.question("What do you want to ask? ");
+
+    if (userProblem.toLowerCase() === "exit") {
+      console.log("Chat ended.");
+      break;
+    }
+
+    const response = await chat.sendMessage({
+      message: userProblem,
+    });
+
+    console.log(response.text);
+  }
+
 }
 
 await main();
